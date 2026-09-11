@@ -7,3 +7,4 @@ logs/
 apps/packages_all_backup/
 static-tmp/
 io.github.jqssun.helium/*/*base.apk*
+**/io.github.jqssun.helium/**/base.apk*
