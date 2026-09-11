@@ -1,5 +1,5 @@
 signatures = ["39e33c9969b97cfd2664be9132b86e069e14c5a823c07f733e6a3e214089a509"]
-source = "LineageOS"
+source = "GrapheneOS"
 hasFsVeritySignatures = false
 
 description = """
