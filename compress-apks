@@ -24,7 +24,7 @@ maybe_brotli() {
     rm -f $TMP
 
     echo "brotli $1"
-    brotli --suffix=".br.tmp" "$1"
+    brotli -q 4 --suffix=".br.tmp" "$1"
 
     sync $TMP
     mv $TMP $COMP
@@ -43,8 +43,8 @@ maybe_zopfli() {
     TMP="$COMP.tmp"
     rm -f $TMP
 
-    echo "zopfli $1"
-    zopfli -c "$1" > $TMP
+    echo "gzip $1"
+    gzip -c "$1" > $TMP
 
     sync $TMP
     mv $TMP $COMP

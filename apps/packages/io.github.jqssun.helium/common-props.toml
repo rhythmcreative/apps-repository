@@ -1,0 +1,7 @@
+signatures = ["095540494d53f48ca051bc86c392c46edb29725da5592bd8af3c3d027b3166bb"]
+source = "LineageOS"
+hasFsVeritySignatures = false
+
+description = """
+Titanium Browser is a lightweight, privacy-focused Chromium browser with native material design.
+"""
