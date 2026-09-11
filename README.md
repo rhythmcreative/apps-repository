@@ -1,40 +1,69 @@
-# Key generation
+<h1 align="center">Apps Repository</h1>
 
-Generate signify key for signing repository metadata:
+<div align="center">
 
-    signify -G -n -p apps.0.pub -s apps.0.sec
+<p><i>Official signed package repository and update backend for the LineageOS App Store.</i></p>
 
-The `0` refers to the generation of the key. This is used for key rotation.
+[![LineageOS](https://img.shields.io/badge/LineageOS-167C80?style=for-the-badge&logo=lineageos&logoColor=white)](https://lineageos.org/)
+[![Repository](https://img.shields.io/badge/Repository-Backend-0969DA?style=for-the-badge&logo=github&logoColor=white)](#)
+[![Ed25519](https://img.shields.io/badge/Signify-Ed25519-005FB8?style=for-the-badge&logo=gnuprivacyguard&logoColor=white)](#)
+[![Active](https://img.shields.io/badge/Status-Active-2EA44F?style=for-the-badge)](#)
 
-If you have your own OS where you can include an fs-verity key in the supported
-keys built into the OS, you can also generate an fs-verity signing key in order
-to provide continuous verification via verified boot instead of only having the
-APK signatures verified at boot (which is actually largely skipped for most
-boots for apps without fs-verity due to the performance cost).
+</div>
 
-GrapheneOS requires fs-verity for system app updates as part of fully
-extending verified boot to system app updates. Android doesn't enforce any
-form of verified boot for system app updates so they can be used to bypass
-verified boot by replacing system apps with arbitrary APKs since signature
-checks and downgrade protection aren't enforced at boot. GrapheneOS adds
-enforced checks and also enforces using fs-verity to provide continuous
-verification instead of only one-time verification at boot where the SSD is
-trusted afterwards in order to match the properties of verified boot for the
-firmware and OS images.
+## About
 
-Optionally, generate fs-verity signing key with `GrapheneOS` changed to an
-arbitrary name representing your project (not used for anything):
+This repository hosts the signed application metadata catalog, split APKs, and distribution releases for the **App Store** ecosystem on LineageOS devices.
 
-    openssl req -newkey rsa:4096 -sha512 -noenc -keyout fsverity_private_key.0.pem -x509 -out fsverity_cert.0.pem -days 10000 -subj /CN=GrapheneOS/
-    openssl x509 -in fsverity_cert.0.pem -out fsverity_cert.0.der -outform der
+It is served statically via GitHub Pages at [`https://rhythmcreative.github.io/apps-repository`](https://rhythmcreative.github.io/apps-repository) and cryptographically authenticated against our root Ed25519 public key.
 
-The `0` refers to the generation of the key. This is used for key rotation.
+## Managed Packages
 
-The `generate.py` script will automatically sign all the published apps with
-the fs-verity key. You can also sign them manually:
+| Package Name | Application | Channel | Provider |
+| :--- | :--- | :--- | :--- |
+| `io.github.jqssun.helium` | Titanium Browser | Stable / Alpha | [jqssun/android-titanium-browser](https://github.com/jqssun/android-titanium-browser) |
+| `org.lineageos.info` | LineageOS Info | Stable / Alpha | [rhythmcreative/Info](https://github.com/rhythmcreative/Info) |
+| `com.android.vending` | Google Play Store | Stable / Alpha | Google (Official Verified) |
+| `com.google.android.gms` | Google Play Services | Stable / Alpha | Google (Official Verified) |
+| `com.google.android.gsf` | Google Services Framework | Stable / Alpha | Google (Official Verified) |
+| `com.google.android.projection.gearhead` | Android Auto | Stable / Alpha | Google (Official Verified) |
 
-    fsverity sign app-release.apk app-release.apk.fsv_sig --key fsverity_private_key.0.pem --cert fsverity_cert.0.pem
+## Repository Structure
 
-For Android 15 and later, GrapheneOS uses APK signature scheme v4 signed with
-the same key as the APK instead of a separate fs-verity key. You don't need the
-fs-verity setup anymore if you only support current versions of GrapheneOS.
+```text
+.
+├── apps/
+│   └── packages/
+│       ├── io.github.jqssun.helium/
+│       ├── org.lineageos.info/
+│       ├── com.android.vending/
+│       ├── com.google.android.gms/
+│       └── com.google.android.gsf/
+├── generate.py
+├── import-apks.py
+├── compress-apks
+└── static/
+```
+
+## Security & Verification
+
+All repository metadata files (`metadata.1.0.sjson`) are signed with an Ed25519 keypair using `signify`. The public key is compiled into the client app, preventing untrusted package installations or tampering:
+
+- **Public Key:** `RWQevdGSdsZc6yuJKy+CnCqhHTqqyjGTDsgtAxWzrCBGpROXDJEe6Znz`
+- **Verification:** Signed using `signify` scheme (`apps.0.pub` / `apps.0.sec`)
+
+## Generating Catalog
+
+```bash
+./generate.py
+```
+
+## Disclaimer
+
+This is an unofficial repository for distributing verified applications on LineageOS. Not affiliated with Google or GrapheneOS.
+
+<div align="center">
+
+<p>Made with ❤️ from rhythmcreative.</p>
+
+</div>
