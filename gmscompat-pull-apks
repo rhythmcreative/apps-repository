@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -o errexit -o nounset -o pipefail
+
+APPS=(com.android.vending com.google.android.gms com.google.android.projection.gearhead)
+
+rm -rf gmscompat-apps
+mkdir gmscompat-apps
+cd gmscompat-apps
+
+for app in ${APPS[@]}; do
+    mkdir $app
+    paths=$(adb shell pm path $app)
+    for package in $paths; do
+        adb pull ${package#package:} $app/
+    done
+done
