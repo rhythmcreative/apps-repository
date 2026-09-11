@@ -1,0 +1,76 @@
+name: Auto Update App Store Catalog
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      apk_url:
+        description: 'Direct URL to the APK file'
+        required: true
+        type: string
+      channel:
+        description: 'Release channel'
+        required: false
+        default: 'stable'
+        type: string
+
+jobs:
+  update-catalog:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y signify-openbsd aapt
+
+      - name: Download APK
+        id: get-apk
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            APK_URL=$(echo '${{ toJson(github.event.release.assets) }}' | jq -r '.[] | select(.name | endswith(".apk")) | .browser_download_url' | head -n 1)
+          else
+            APK_URL="${{ inputs.apk_url }}"
+          fi
+
+          if [ -z "$APK_URL" ] || [ "$APK_URL" = "null" ]; then
+            echo "No APK asset found in release."
+            exit 0
+          fi
+
+          echo "Downloading $APK_URL..."
+          curl -L -o new_app.apk "$APK_URL"
+          echo "apk_url=$APK_URL" >> $GITHUB_OUTPUT
+
+      - name: Update catalog and sign
+        if: steps.get-apk.outputs.apk_url != ''
+        env:
+          SIGNIFY_KEY: ${{ secrets.APPS_PRIVATE_KEY }}
+        run: |
+          echo "$SIGNIFY_KEY" > apps.0.sec
+          chmod 600 apps.0.sec
+
+          ./update_package.py new_app.apk --url "${{ steps.get-apk.outputs.apk_url }}" --key apps.0.sec
+
+          rm -f apps.0.sec
+
+      - name: Commit and push changes
+        if: steps.get-apk.outputs.apk_url != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add metadata.1.json metadata.1.0.sjson metadata.1.json.0.sig
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore(catalog): auto-update package from release"
+            git push origin main
+          fi
